@@ -2,8 +2,8 @@ STA 15
 TCP 25252  
 
 
-DO_REG  1 2000  0  0      1     0  DO  @DigOut1 # # 0 #     # 1 #     #    #
-DO_REG  1 2002  0  0      1     0  DO  @DigOut2 # # 0 #     # 1 #     #    #
-DO_REG  1 2005  0  0      1     0  DO  @DigOut3 # # 0 #     # 1 #     #    #
-DO_REG  1 2006  0  0      1     0  DO  @DigOut4 # # 0 #     # 1 #     #    #
-HR_INT  1 1000  0  0   4095  6500  AO  @AnaOut  # 1 0 12000 0 1 10500 3000 #  
+DO_REG  1 2000  0  0      1     0  DO  @DigOut1 # # # #     # 1 #     #    #
+DO_REG  1 2002  0  0      1     0  DO  @DigOut2 # # # #     # 1 #     #    #
+DO_REG  1 2005  0  0      1     0  DO  @DigOut3 # # # #     # 1 #     #    #
+DO_REG  1 2006  0  0      1     0  DO  @DigOut4 # # # #     # 1 #     #    #
+HR_INT  1 1000  0  0  12000  6500  AO  @AnaOut  # 1 0 12000 0 1 10500 3000 #  
