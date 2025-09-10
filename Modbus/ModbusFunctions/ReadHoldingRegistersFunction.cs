@@ -24,15 +24,40 @@ namespace Modbus.ModbusFunctions
         /// <inheritdoc />
         public override byte[] PackRequest()
         {
-            //TO DO: IMPLEMENT
-            throw new NotImplementedException();
+            ModbusReadCommandParameters parametri = this.CommandParameters as ModbusReadCommandParameters;
+            byte[] paketi = new byte[12];
+            Buffer.BlockCopy((Array)BitConverter.GetBytes(IPAddress.HostToNetworkOrder((short)parametri.TransactionId)), 0, paketi, 0, 2);
+            Buffer.BlockCopy((Array)BitConverter.GetBytes(IPAddress.HostToNetworkOrder((short)parametri.ProtocolId)), 0, paketi, 2, 2);
+            Buffer.BlockCopy((Array)BitConverter.GetBytes(IPAddress.HostToNetworkOrder((short)parametri.Length)), 0, paketi, 4, 2);
+            paketi[6] = parametri.UnitId;
+            paketi[7] = parametri.FunctionCode;
+            Buffer.BlockCopy((Array)BitConverter.GetBytes(IPAddress.HostToNetworkOrder((short)parametri.StartAddress)), 0, paketi, 8, 2);
+            Buffer.BlockCopy((Array)BitConverter.GetBytes(IPAddress.HostToNetworkOrder((short)parametri.Quantity)), 0, paketi, 10, 2);
+            return paketi;
         }
 
         /// <inheritdoc />
         public override Dictionary<Tuple<PointType, ushort>, ushort> ParseResponse(byte[] response)
         {
-            //TO DO: IMPLEMENT
-            throw new NotImplementedException();
+            ModbusReadCommandParameters mpar = this.CommandParameters as ModbusReadCommandParameters;
+            Dictionary<Tuple<PointType, ushort>, ushort> dict = new Dictionary<Tuple<PointType, ushort>, ushort>();
+
+            ushort quantity = response[8];
+
+            ushort value;
+
+            int p1 = 7, p2 = 8;
+            for (int i = 0; i < quantity / 2; i++) 
+            {
+                byte port1 = response[p1 += 2];
+                byte port2 = response[p2 += 2];
+
+                value = (ushort)(port2 + (port1 << 8));
+                dict.Add(new Tuple<PointType, ushort>(PointType.ANALOG_OUTPUT, (ushort)(mpar.StartAddress + i)), value);
+
+
+            }
+            return dict;
         }
     }
 }
