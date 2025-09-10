@@ -16,8 +16,8 @@ namespace ProcessingModule
         /// <returns>The value in engineering units.</returns>
 		public double ConvertToEGU(double scalingFactor, double deviation, ushort rawValue)
 		{
-            return rawValue;
-		}
+            return rawValue * scalingFactor + deviation;
+        }
 
         /// <summary>
         /// Converts the point value from EGU to raw form.

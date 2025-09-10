@@ -32,7 +32,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Modbus">
-      <HintPath>..\3rdPartyLibs\Modbus.dll</HintPath>
+      <HintPath>..\Modbus\bin\Debug\Modbus.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

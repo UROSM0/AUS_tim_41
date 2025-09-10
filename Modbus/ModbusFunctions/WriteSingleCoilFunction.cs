@@ -42,12 +42,12 @@ namespace Modbus.ModbusFunctions
             var dict = new Dictionary<Tuple<PointType, ushort>, ushort>();
 
             var adresa = BitConverter.ToUInt16(response, 8);
-            var vrijednost = BitConverter.ToUInt16(response, 10);
+            var vrednost = BitConverter.ToUInt16(response, 10);
 
             adresa = (ushort)IPAddress.NetworkToHostOrder((short)adresa);
-            vrijednost = (ushort)IPAddress.NetworkToHostOrder((short)vrijednost);
+            vrednost = (ushort)IPAddress.NetworkToHostOrder((short)vrednost);
 
-            dict.Add(new Tuple<PointType, ushort>(PointType.DIGITAL_OUTPUT, adresa), vrijednost);
+            dict.Add(new Tuple<PointType, ushort>(PointType.DIGITAL_OUTPUT, adresa), vrednost);
 
             return dict;
         }
