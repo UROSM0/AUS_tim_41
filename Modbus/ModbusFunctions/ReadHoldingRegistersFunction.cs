@@ -42,21 +42,23 @@ namespace Modbus.ModbusFunctions
             ModbusReadCommandParameters mpar = this.CommandParameters as ModbusReadCommandParameters;
             Dictionary<Tuple<PointType, ushort>, ushort> dict = new Dictionary<Tuple<PointType, ushort>, ushort>();
 
-            ushort quantity = response[8];
-
-            ushort value;
-
-            int p1 = 7, p2 = 8;
-            for (int i = 0; i < quantity / 2; i++) 
+            if (response[7] == mpar.FunctionCode + 0x80)
             {
-                byte port1 = response[p1 += 2];
-                byte port2 = response[p2 += 2];
-
-                value = (ushort)(port2 + (port1 << 8));
-                dict.Add(new Tuple<PointType, ushort>(PointType.ANALOG_OUTPUT, (ushort)(mpar.StartAddress + i)), value);
-
-
+                HandeException(response[8]);
+                return dict; 
             }
+
+            ushort adresa = mpar.StartAddress;
+            int byteCount = response[8]; 
+             for (int i = 0; i < byteCount; i += 2)
+            {
+                ushort value = BitConverter.ToUInt16(response, 9 + i);
+                value = (ushort)IPAddress.NetworkToHostOrder((short)value); 
+
+                dict.Add(new Tuple<PointType, ushort>(PointType.ANALOG_OUTPUT, adresa), value);
+                adresa++;
+            }
+
             return dict;
         }
     }

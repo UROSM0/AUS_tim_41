@@ -42,24 +42,23 @@ namespace Modbus.ModbusFunctions
             ModbusReadCommandParameters mpar = this.CommandParameters as ModbusReadCommandParameters;
             Dictionary<Tuple<PointType, ushort>, ushort> dict = new Dictionary<Tuple<PointType, ushort>, ushort>();
 
-            ushort quantity = response[8]; //koliko bajtova treba citati; ByteCount - br BAJTOVA
+            byte byteCount = response[8]; 
 
-            ushort value;
-            Console.WriteLine(quantity);
-            for (int i = 0; i < quantity; i++)
+            for (int i = 0; i < byteCount; i++)
             {
+                byte currentByte = response[9 + i];
                 for (int j = 0; j < 8; j++)
                 {
-                    value = (ushort)(response[9 + i] & (byte)0x1);  //logicko i sa maskom cija je vrijednost 1
-                    response[9 + i] /= 2;   //siftovanje
+                    int bitIndex = i * 8 + j;
+                    if (bitIndex >= mpar.Quantity) break; 
 
-                    if (mpar.Quantity < (j + i * 8)) { break; } //Quantity je br BITOVA
-
-
-                    dict.Add(new Tuple<PointType, ushort>(PointType.DIGITAL_OUTPUT, (ushort)(mpar.StartAddress + (j + i * 8))), value);
+                    ushort value = (ushort)((currentByte >> j) & 0x1);
+                    dict.Add(new Tuple<PointType, ushort>(
+                        PointType.DIGITAL_OUTPUT,
+                        (ushort)(mpar.StartAddress + bitIndex)), value);
                 }
-
             }
+
             return dict;
         }
     }
