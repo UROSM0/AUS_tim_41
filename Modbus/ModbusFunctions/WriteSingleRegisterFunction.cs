@@ -33,7 +33,7 @@ namespace Modbus.ModbusFunctions
             paket[7] = parametri.FunctionCode;
             Buffer.BlockCopy(BitConverter.GetBytes(IPAddress.HostToNetworkOrder((short)parametri.OutputAddress)), 0, paket, 8, 2);
             Buffer.BlockCopy(BitConverter.GetBytes(IPAddress.HostToNetworkOrder((short)parametri.Value)), 0, paket, 10, 2);
-            return paket; ;
+            return paket;
         }
 
         /// <inheritdoc />
@@ -47,7 +47,7 @@ namespace Modbus.ModbusFunctions
             adresa = (ushort)IPAddress.NetworkToHostOrder((short)adresa);
             vrednost = (ushort)IPAddress.NetworkToHostOrder((short)vrednost);
 
-            dict.Add(new Tuple<PointType, ushort>(PointType.DIGITAL_OUTPUT, adresa), vrednost);
+            dict.Add(new Tuple<PointType, ushort>(PointType.ANALOG_OUTPUT, adresa), vrednost);
 
             return dict;
         }
