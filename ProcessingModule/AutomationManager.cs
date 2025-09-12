@@ -68,25 +68,23 @@ namespace ProcessingModule
             const ushort P2_ADDR = 2006;
             const ushort L_ADDR = 1000;
 
-            
+         
             const int MAX_LITERS = 12000;       
-            const int L_PER_METER = 3000;        
+            const int L_PER_METER = 3000;       
             const int DRAINAGE_L = 2 * L_PER_METER; 
-            const int INFLOW_UNIT = 80;          
+            const int INFLOW_UNIT = 80;           
             const int OUTFLOW_LPS = 50;          
 
-            
             bool firstScan = true;
             int lastStop = 0;
 
-         
             var conv = new EGUConverter();
 
-           
+            
             void WriteDO(IDigitalPoint pt, ushort addr, int value)
             {
                 if (pt?.ConfigItem == null) return;
-                if (pt.RawValue == value) return; 
+                if (pt.RawValue == value) return;
                 processingManager.ExecuteWriteCommand(
                     pt.ConfigItem,
                     configuration.GetTransactionId(),
@@ -96,13 +94,12 @@ namespace ProcessingModule
                 );
             }
 
-           
             void WriteAO(IAnalogPoint pt, ushort addr, int eguLiters)
             {
                 if (pt?.ConfigItem == null) return;
                 int clamped = Math.Max(0, Math.Min(eguLiters, MAX_LITERS));
                 int raw = conv.ConvertToRaw(pt.ConfigItem.ScaleFactor, pt.ConfigItem.Deviation, clamped);
-                if (pt.RawValue == raw) return; 
+                if (pt.RawValue == raw) return;
                 processingManager.ExecuteWriteCommand(
                     pt.ConfigItem,
                     configuration.GetTransactionId(),
@@ -112,11 +109,26 @@ namespace ProcessingModule
                 );
             }
 
+           
+            DateTime lastTick = DateTime.UtcNow;
+
             while (!disposedValue)
             {
                 try
                 {
                     
+                    automationTrigger?.WaitOne();  
+
+                    
+                    DateTime now = DateTime.UtcNow;
+                    double dt = (now - lastTick).TotalSeconds;
+                    lastTick = now;
+
+                    
+                    if (dt < 0.1) dt = 0.1;
+                    if (dt > 5.0) dt = 5.0;
+
+                  
                     var ids = new List<PointIdentifier>
             {
                 new PointIdentifier(PointType.DIGITAL_OUTPUT, STOP_ADDR),
@@ -135,16 +147,12 @@ namespace ProcessingModule
                     var pL = points[4] as IAnalogPoint;
 
                     if (pSTOP == null || pV1 == null || pP1 == null || pP2 == null || pL == null)
-                    {
-                        automationTrigger?.WaitOne(delayBetweenCommands);
-                        continue;
-                    }
+                        continue; 
 
                     int stop = pSTOP.RawValue; 
                     int v1 = pV1.RawValue;
                     int p1 = pP1.RawValue;
                     int p2 = pP2.RawValue;
-
 
                     int L = (int)Math.Round(
                         (pL.EguValue != 0 || pL.RawValue == 0)
@@ -152,28 +160,32 @@ namespace ProcessingModule
                             : conv.ConvertToEGU(pL.ConfigItem.ScaleFactor, pL.ConfigItem.Deviation, pL.RawValue)
                     );
 
-                    int highAlarm = (int)pL.ConfigItem.HighLimit; 
-                    int lowAlarm = (int)pL.ConfigItem.LowLimit;  
+                    int highAlarm = (int)pL.ConfigItem.HighLimit;
+                    int lowAlarm = (int)pL.ConfigItem.LowLimit;
 
+                    
                     if (firstScan)
                     {
                         lastStop = stop;
                         firstScan = false;
                     }
-
                     if (lastStop != stop)
                     {
                         if (stop == 1)
                         {
+                            
                             WriteDO(pP1, P1_ADDR, 0);
                             WriteDO(pP2, P2_ADDR, 0);
                         }
+                        else 
                         {
+                           
                             WriteDO(pV1, V1_ADDR, 0);
                         }
                         lastStop = stop;
                     }
 
+                    
                     if (stop == 0)
                     {
                         if (v1 != 0) WriteDO(pV1, V1_ADDR, 0);
@@ -184,19 +196,17 @@ namespace ProcessingModule
                         if (p2 != 0) WriteDO(pP2, P2_ADDR, 0);
                     }
 
+                    
                     int inflowLps = (2 * p1 + 1 * p2) * INFLOW_UNIT;
-
-
                     int outflowLps = (v1 == 1 && L > DRAINAGE_L) ? OUTFLOW_LPS : 0;
 
-
-                    double dt = delayBetweenCommands / 1000.0; 
                     int newL = (int)Math.Round(L + (inflowLps - outflowLps) * dt);
                     newL = Math.Max(0, Math.Min(newL, MAX_LITERS));
 
                     if (newL != L)
                         WriteAO(pL, L_ADDR, newL);
 
+                    
                     if (newL >= highAlarm)
                     {
                         WriteDO(pP1, P1_ADDR, 0);
@@ -204,15 +214,14 @@ namespace ProcessingModule
                         WriteDO(pV1, V1_ADDR, 1);
                         WriteDO(pSTOP, STOP_ADDR, 1);
                     }
-
-                    automationTrigger?.WaitOne(delayBetweenCommands);
                 }
                 catch
                 {
-                    automationTrigger?.WaitOne(delayBetweenCommands);
+                    
                 }
             }
         }
+
 
 
         #region IDisposable Support
