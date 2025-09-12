@@ -28,7 +28,7 @@ namespace ProcessingModule
         /// <returns>The raw value.</returns>
 		public ushort ConvertToRaw(double scalingFactor, double deviation, double eguValue)
         {
-            return (ushort)eguValue;
-		}
+            return (ushort)((eguValue - deviation) / scalingFactor);
+        }
 	}
 }
