@@ -38,6 +38,11 @@ namespace ProcessingModule
         /// <returns>The alarm indication.</returns>
 		public AlarmType GetAlarmForDigitalPoint(ushort state, IConfigItem configItem)
 		{
+            if (state == configItem.AbnormalValue)
+            {
+                return AlarmType.ABNORMAL_VALUE;
+            }
+
             return AlarmType.NO_ALARM;
         }
 	}
