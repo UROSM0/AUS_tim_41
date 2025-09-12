@@ -168,7 +168,6 @@ namespace ProcessingModule
                             WriteDO(pP1, P1_ADDR, 0);
                             WriteDO(pP2, P2_ADDR, 0);
                         }
-                        else // stop == 0
                         {
                             WriteDO(pV1, V1_ADDR, 0);
                         }
@@ -179,7 +178,7 @@ namespace ProcessingModule
                     {
                         if (v1 != 0) WriteDO(pV1, V1_ADDR, 0);
                     }
-                    else // stop == 1
+                    else 
                     {
                         if (p1 != 0) WriteDO(pP1, P1_ADDR, 0);
                         if (p2 != 0) WriteDO(pP2, P2_ADDR, 0);
@@ -198,6 +197,13 @@ namespace ProcessingModule
                     if (newL != L)
                         WriteAO(pL, L_ADDR, newL);
 
+                    if (newL >= highAlarm)
+                    {
+                        WriteDO(pP1, P1_ADDR, 0);
+                        WriteDO(pP2, P2_ADDR, 0);
+                        WriteDO(pV1, V1_ADDR, 1);
+                        WriteDO(pSTOP, STOP_ADDR, 1);
+                    }
 
                     automationTrigger?.WaitOne(delayBetweenCommands);
                 }
