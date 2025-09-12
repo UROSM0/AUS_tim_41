@@ -133,6 +133,22 @@ namespace ProcessingModule
 
                         lastStop = stop;
                     }
+                    if (stop == 0)
+                    {
+                        
+                        if (v1 != 0)
+                        {
+                            WriteDO(pV1, V1_ADDR, 0);
+                        }
+                    }
+
+                    if (stop == 1)
+                    {
+                        if (p1 != 0) WriteDO(pP1, P1_ADDR, 0);
+                        if (p2 != 0) WriteDO(pP2, P2_ADDR, 0);
+                    }
+
+                    automationTrigger?.WaitOne(delayBetweenCommands);
 
                 }
                 catch
